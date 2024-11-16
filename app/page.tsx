@@ -18,11 +18,12 @@ import { SignInButton, useUser } from "@clerk/nextjs";
 import * as RadioGroup from "@radix-ui/react-radio-group";
 import { DownloadIcon, RefreshCwIcon } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import { domain } from "@/app/lib/domain";
 import InfoTooltip from "./components/InfoToolTip";
+import { HexColorPicker } from "react-colorful";
 
 // const layouts = [
 //   { name: "Solo", icon: "/solo.svg" },
@@ -39,19 +40,6 @@ const logoStyles = [
   { name: "Minimal", icon: "/minimal.svg" },
 ];
 
-const primaryColors = [
-  { name: "Blue", color: "#0F6FFF" },
-  { name: "Red", color: "#FF0000" },
-  { name: "Green", color: "#00FF00" },
-  { name: "Yellow", color: "#FFFF00" },
-];
-
-const backgroundColors = [
-  { name: "White", color: "#FFFFFF" },
-  { name: "Gray", color: "#CCCCCC" },
-  { name: "Black", color: "#000000" },
-];
-
 export default function Page() {
   const [userAPIKey, setUserAPIKey] = useState(() => {
     if (typeof window !== "undefined") {
@@ -62,15 +50,24 @@ export default function Page() {
   const [companyName, setCompanyName] = useState("");
   // const [selectedLayout, setSelectedLayout] = useState(layouts[0].name);
   const [selectedStyle, setSelectedStyle] = useState(logoStyles[0].name);
-  const [selectedPrimaryColor, setSelectedPrimaryColor] = useState(
-    primaryColors[0].name,
-  );
-  const [selectedBackgroundColor, setSelectedBackgroundColor] = useState(
-    backgroundColors[0].name,
-  );
+  const [selectedPrimaryColor, setSelectedPrimaryColor] = useState("#0F6FFF");
+  const [selectedBackgroundColor, setSelectedBackgroundColor] = useState("#FFFFFF");
   const [additionalInfo, setAdditionalInfo] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [generatedImage, setGeneratedImage] = useState("");
+  const [openColorPicker, setOpenColorPicker] = useState<"primary" | "background" | null>(null);
+
+  // Close color picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (openColorPicker && !(event.target as Element).closest('.color-picker-container')) {
+        setOpenColorPicker(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [openColorPicker]);
 
   const { isSignedIn, isLoaded, user } = useUser();
 
@@ -235,57 +232,47 @@ export default function Page() {
                       <label className="mb-1 block text-xs font-bold uppercase text-[#6F6F6F]">
                         Primary
                       </label>
-                      <Select
-                        value={selectedPrimaryColor}
-                        onValueChange={setSelectedPrimaryColor}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a fruit" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            {primaryColors.map((color) => (
-                              <SelectItem key={color.color} value={color.name}>
-                                <span className="flex items-center">
-                                  <span
-                                    style={{ backgroundColor: color.color }}
-                                    className="mr-2 size-4 rounded-sm bg-white"
-                                  />
-                                  {color.name}
-                                </span>
-                              </SelectItem>
-                            ))}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
+                      <div className="relative color-picker-container">
+                        <div 
+                          className="h-9 w-full cursor-pointer rounded-md border border-input bg-[#343434] px-3 py-1 flex items-center"
+                          style={{ borderColor: selectedPrimaryColor }}
+                          onClick={() => setOpenColorPicker(openColorPicker === "primary" ? null : "primary")}
+                        >
+                          <span 
+                            className="size-4 rounded-sm mr-2"
+                            style={{ backgroundColor: selectedPrimaryColor }}
+                          />
+                          <span className="text-sm">{selectedPrimaryColor}</span>
+                        </div>
+                        {openColorPicker === "primary" && (
+                          <div className="absolute z-50 mt-2">
+                            <HexColorPicker color={selectedPrimaryColor} onChange={setSelectedPrimaryColor} />
+                          </div>
+                        )}
+                      </div>
                     </div>
                     <div className="flex-1">
                       <label className="mb-1 block items-center text-xs font-bold uppercase text-[#6F6F6F]">
                         Background
                       </label>
-                      <Select
-                        value={selectedBackgroundColor}
-                        onValueChange={setSelectedBackgroundColor}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a fruit" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            {backgroundColors.map((color) => (
-                              <SelectItem key={color.color} value={color.name}>
-                                <span className="flex items-center">
-                                  <span
-                                    style={{ backgroundColor: color.color }}
-                                    className="mr-2 size-4 rounded-sm bg-white"
-                                  />
-                                  {color.name}
-                                </span>
-                              </SelectItem>
-                            ))}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
+                      <div className="relative color-picker-container">
+                        <div 
+                          className="h-9 w-full cursor-pointer rounded-md border border-input bg-[#343434] px-3 py-1 flex items-center"
+                          style={{ borderColor: selectedBackgroundColor }}
+                          onClick={() => setOpenColorPicker(openColorPicker === "background" ? null : "background")}
+                        >
+                          <span 
+                            className="size-4 rounded-sm mr-2"
+                            style={{ backgroundColor: selectedBackgroundColor }}
+                          />
+                          <span className="text-sm">{selectedBackgroundColor}</span>
+                        </div>
+                        {openColorPicker === "background" && (
+                          <div className="absolute z-50 mt-2" style={{ right: 0 }}>
+                            <HexColorPicker color={selectedBackgroundColor} onChange={setSelectedBackgroundColor} />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                   {/* Additional Options Section */}
