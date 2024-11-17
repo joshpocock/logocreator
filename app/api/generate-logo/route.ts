@@ -19,7 +19,6 @@ export async function POST(req: Request) {
     .object({
       userAPIKey: z.string().optional(),
       companyName: z.string(),
-      // selectedLayout: z.string(),
       selectedStyle: z.string(),
       selectedPrimaryColor: z.string(),
       selectedBackgroundColor: z.string(),
@@ -106,28 +105,9 @@ export async function POST(req: Request) {
     Minimal: minimalStyle,
   };
 
-  const prompt = dedent`Create a professional logo with these EXACT specifications:
+  const prompt = dedent`A single logo, high-quality, award-winning professional design, made for both digital and print media, only contains a few vector shapes, ${styleLookup[data.selectedStyle]}
 
-  1. COLORS (MUST BE EXACT):
-     - Primary Color: ${data.selectedPrimaryColor}
-     - Background Color: ${data.selectedBackgroundColor}
-     These hex colors are mandatory and must be used exactly as specified.
-
-  2. STYLE:
-     ${styleLookup[data.selectedStyle]}
-
-  3. CONTENT:
-     - Company Name: "${data.companyName}" (must be included in the logo)
-     ${data.additionalInfo ? `- Additional Details: ${data.additionalInfo}` : ''}
-  
-  4. REQUIREMENTS:
-     - High-quality, award-winning professional design
-     - Made for both digital and print media
-     - Contains only a few vector shapes
-     - Clean and professional appearance
-     - STRICT COLOR ADHERENCE: Use the exact hex colors specified above
-
-  The most important requirement is to use the exact hex colors provided. Do not substitute or modify these colors in any way.`;
+  Primary color is ${data.selectedPrimaryColor} and background color is ${data.selectedBackgroundColor}. The company name is ${data.companyName}, make sure to include the company name in the logo. ${data.additionalInfo ? `Additional info: ${data.additionalInfo}` : ""}`;
 
   try {
     const response = await client.images.create({
@@ -136,11 +116,8 @@ export async function POST(req: Request) {
       width: 768,
       height: 768,
       steps: 4,
-      negative_prompt: "different colors, alternate colors, modified colors, wrong colors, color variation",
       // @ts-expect-error - this is not typed in the API
       response_format: "base64",
-      seed: Math.floor(Math.random() * 1000000), // Add randomness to each generation
-      cfg_scale: 8, // Increase cfg_scale for more prompt adherence
     });
     return Response.json(response.data[0], { status: 200 });
   } catch (error) {

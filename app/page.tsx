@@ -23,13 +23,6 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import { domain } from "@/app/lib/domain";
 import InfoTooltip from "./components/InfoToolTip";
-import { HexColorPicker } from "react-colorful";
-
-// const layouts = [
-//   { name: "Solo", icon: "/solo.svg" },
-//   { name: "Side", icon: "/side.svg" },
-//   { name: "Stack", icon: "/stack.svg" },
-// ];
 
 const logoStyles = [
   { name: "Tech", icon: "/tech.svg" },
@@ -40,6 +33,18 @@ const logoStyles = [
   { name: "Minimal", icon: "/minimal.svg" },
 ];
 
+const colors = [
+  { name: "Red", color: "#FF0000" },
+  { name: "Blue", color: "#0000FF" },
+  { name: "Yellow", color: "#FFFF00" },
+  { name: "Green", color: "#00FF00" },
+  { name: "Orange", color: "#FFA500" },
+  { name: "Purple", color: "#800080" },
+  { name: "Black", color: "#000000" },
+  { name: "White", color: "#FFFFFF" },
+  { name: "Gray", color: "#808080" },
+];
+
 export default function Page() {
   const [userAPIKey, setUserAPIKey] = useState(() => {
     if (typeof window !== "undefined") {
@@ -48,10 +53,9 @@ export default function Page() {
     return "";
   });
   const [companyName, setCompanyName] = useState("");
-  // const [selectedLayout, setSelectedLayout] = useState(layouts[0].name);
   const [selectedStyle, setSelectedStyle] = useState(logoStyles[0].name);
-  const [selectedPrimaryColor, setSelectedPrimaryColor] = useState("#0F6FFF");
-  const [selectedBackgroundColor, setSelectedBackgroundColor] = useState("#FFFFFF");
+  const [selectedPrimaryColor, setSelectedPrimaryColor] = useState(colors[1].name); // Default to Blue
+  const [selectedBackgroundColor, setSelectedBackgroundColor] = useState(colors[7].name); // Default to White
   const [additionalInfo, setAdditionalInfo] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [generatedImage, setGeneratedImage] = useState("");
@@ -89,7 +93,6 @@ export default function Page() {
       body: JSON.stringify({
         userAPIKey,
         companyName,
-        // selectedLayout,
         selectedStyle,
         selectedPrimaryColor,
         selectedBackgroundColor,
@@ -168,35 +171,6 @@ export default function Page() {
                       required
                     />
                   </div>
-                  {/* Layout Section */}
-                  {/* <div className="mb-6">
-                    <label className="mb-2 flex items-center text-xs font-bold uppercase text-[#6F6F6F]">
-                      Layout
-                      <InfoTooltip content="Select a layout for your logo" />
-                    </label>
-                    <RadioGroup.Root
-                      value={selectedLayout}
-                      onValueChange={setSelectedLayout}
-                      className="group/root grid grid-cols-3 gap-3"
-                    >
-                      {layouts.map((layout) => (
-                        <RadioGroup.Item
-                          value={layout.name}
-                          key={layout.name}
-                          className="group text-[#6F6F6F] focus-visible:outline-none data-[state=checked]:text-white"
-                        >
-                          <Image
-                            src={layout.icon}
-                            alt={layout.name}
-                            width={96}
-                            height={96}
-                            className="w-full rounded-md border border-transparent group-focus-visible:outline group-focus-visible:outline-offset-2 group-focus-visible:outline-gray-400 group-data-[state=checked]:border-white"
-                          />
-                          <span className="text-xs">{layout.name}</span>
-                        </RadioGroup.Item>
-                      ))}
-                    </RadioGroup.Root>
-                  </div> */}
                   {/* Logo Style Section */}
                   <div className="mb-6">
                     <label className="mb-2 flex items-center text-xs font-bold uppercase text-[#6F6F6F]">
@@ -232,47 +206,57 @@ export default function Page() {
                       <label className="mb-1 block text-xs font-bold uppercase text-[#6F6F6F]">
                         Primary
                       </label>
-                      <div className="relative color-picker-container">
-                        <div 
-                          className="h-9 w-full cursor-pointer rounded-md border border-input bg-[#343434] px-3 py-1 flex items-center"
-                          style={{ borderColor: selectedPrimaryColor }}
-                          onClick={() => setOpenColorPicker(openColorPicker === "primary" ? null : "primary")}
-                        >
-                          <span 
-                            className="size-4 rounded-sm mr-2"
-                            style={{ backgroundColor: selectedPrimaryColor }}
-                          />
-                          <span className="text-sm">{selectedPrimaryColor}</span>
-                        </div>
-                        {openColorPicker === "primary" && (
-                          <div className="absolute z-50 mt-2">
-                            <HexColorPicker color={selectedPrimaryColor} onChange={setSelectedPrimaryColor} />
-                          </div>
-                        )}
-                      </div>
+                      <Select
+                        value={selectedPrimaryColor}
+                        onValueChange={setSelectedPrimaryColor}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a color" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            {colors.map((color) => (
+                              <SelectItem key={color.name} value={color.name}>
+                                <span className="flex items-center">
+                                  <span
+                                    style={{ backgroundColor: color.color }}
+                                    className="mr-2 size-4 rounded-sm"
+                                  />
+                                  {color.name}
+                                </span>
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="flex-1">
                       <label className="mb-1 block items-center text-xs font-bold uppercase text-[#6F6F6F]">
                         Background
                       </label>
-                      <div className="relative color-picker-container">
-                        <div 
-                          className="h-9 w-full cursor-pointer rounded-md border border-input bg-[#343434] px-3 py-1 flex items-center"
-                          style={{ borderColor: selectedBackgroundColor }}
-                          onClick={() => setOpenColorPicker(openColorPicker === "background" ? null : "background")}
-                        >
-                          <span 
-                            className="size-4 rounded-sm mr-2"
-                            style={{ backgroundColor: selectedBackgroundColor }}
-                          />
-                          <span className="text-sm">{selectedBackgroundColor}</span>
-                        </div>
-                        {openColorPicker === "background" && (
-                          <div className="absolute z-50 mt-2" style={{ right: 0 }}>
-                            <HexColorPicker color={selectedBackgroundColor} onChange={setSelectedBackgroundColor} />
-                          </div>
-                        )}
-                      </div>
+                      <Select
+                        value={selectedBackgroundColor}
+                        onValueChange={setSelectedBackgroundColor}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a color" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            {colors.map((color) => (
+                              <SelectItem key={color.name} value={color.name}>
+                                <span className="flex items-center">
+                                  <span
+                                    style={{ backgroundColor: color.color }}
+                                    className="mr-2 size-4 rounded-sm"
+                                  />
+                                  {color.name}
+                                </span>
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                   {/* Additional Options Section */}
